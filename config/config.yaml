@@ -1,0 +1,17 @@
+model:
+  name: efficientnet_b0
+  num_classes: 10
+  pretrained: true
+
+training:
+  batch_size: 32
+  num_epochs: 2
+  learning_rate: 0.001
+
+data:
+  name: "CIFAR10"
+  dataset_path: "./data/"
+
+paths:
+  log_path: "./logs/"
+  plot_path: "./outputs/figures/"

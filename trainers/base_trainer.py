@@ -1,6 +1,7 @@
 import torch
 from utils.plotting import plot_loss
 from utils.logging import log_to_csv
+import time
 
 class BaseTrainer:
     def __init__(self, model, device):
@@ -25,6 +26,7 @@ class BaseTrainer:
         """ Train the model for a given number of epochs. """
 
         epoch_losses = []
+        start_time = time.time()
 
         for epoch in range(num_epochs):
             epoch_loss = self._train_epoch(train_loader, epoch, num_epochs, verbose)
@@ -34,7 +36,9 @@ class BaseTrainer:
                 print(f"Epoch {epoch+1}/{num_epochs}, Loss: {epoch_loss:.4f}")
             log_to_csv(epoch_losses, log_path)
 
+        elapsed_time = time.time() - start_time
         if verbose:
+            print(f"Training completed in: {elapsed_time:.2f} seconds")
             plot_loss(epoch_losses, plot_path)
 
     def evaluate(self, test_loader, verbose=True):

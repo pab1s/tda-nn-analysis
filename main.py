@@ -58,5 +58,5 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 if __name__ == "__main__":
-    train(num_epochs, model, device, criterion, optimizer)
+    train(num_epochs, model, device, criterion, optimizer, train_loader, "logs/log.csv", "outputs/figures/plot.png")
     eval(model, device)

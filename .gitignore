@@ -166,3 +166,7 @@ data/
 *.xls
 *.xlsx
 
+# Outputs
+outputs/
+logs/
+

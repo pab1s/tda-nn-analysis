@@ -13,7 +13,6 @@ def main(config_path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_loader, test_loader = get_dataloaders(config)
     
-    # Loads the specified model based on the configuration
     model = get_model(
         config['model']['name'], 
         config['model']['num_classes'], 
@@ -21,7 +20,8 @@ def main(config_path):
     ).to(device)
     
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['training']['learning_rate'])
+    optimizer = torch.optim.Adam
+    optimizer_params = {'lr': config['training']['learning_rate']}
     
     # Prepare filenames for logging and plotting
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -31,8 +31,11 @@ def main(config_path):
     
     trainer = get_trainer(config['trainer'], model=model, device=device)
     
-    trainer.build(criterion=criterion, optimizer=optimizer)
-    
+    trainer.build(
+        criterion=criterion, 
+        optimizer_class=optimizer, 
+        optimizer_params=optimizer_params
+    )
     trainer.train(
         train_loader=train_loader, 
         num_epochs=config['training']['num_epochs'], 

@@ -1,0 +1,24 @@
+trainer: "BasicTrainer"
+
+model:
+  name: efficientnet_b0
+  num_classes: 10
+  pretrained: true
+
+training:
+  batch_size: 32
+  num_epochs: 2   # Just maintained for compatibility
+  initial_epochs: 2
+  fine_tuning_epochs: 5
+  learning_rate: 0.001  # Also maintained for compatibility
+  fine_tuning_learning_rate: 0.0001
+  freeze_until_layer: "classifier.1.weight"
+  final_fine_tuning_learning_rate: 0.00001
+
+data:
+  name: CIFAR10
+  dataset_path: "./data/"
+
+paths:
+  log_path: "./logs/"
+  plot_path: "./outputs/figures/"

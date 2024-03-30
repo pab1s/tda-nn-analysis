@@ -19,10 +19,6 @@ CONFIG_TEST = {
         'batch_size': 64,
         'num_epochs': 1,
         'learning_rate': 0.001,
-    },
-    'paths': {
-        'log_path': "./logs/log_test.csv",
-        'plot_path': "./outputs/figures/plot_test.png",
     }
 }
 
@@ -38,22 +34,19 @@ def test_training_loop():
     ).to(device)
     
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(
-        model.parameters(),
-        lr=CONFIG_TEST['training']['learning_rate']
-    )
+    optimizer = torch.optim.Adam
+    optimizer_params = {'lr': CONFIG_TEST['training']['learning_rate']}
 
     trainer = get_trainer(CONFIG_TEST['trainer'], model=model, device=device)
     
     trainer.build(
         criterion=criterion,
-        optimizer=optimizer,
+        optimizer_class=optimizer,
+        optimizer_params=optimizer_params
     )
     trainer.train(
         train_loader=train_loader,
         num_epochs=CONFIG_TEST['training']['num_epochs'],
-        log_path=CONFIG_TEST['paths']['log_path'],
-        plot_path=CONFIG_TEST['paths']['plot_path'],
         verbose=False
     )
     accuracy = trainer.evaluate(

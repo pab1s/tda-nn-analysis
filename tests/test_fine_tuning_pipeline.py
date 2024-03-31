@@ -1,5 +1,6 @@
 import pytest
 from trainers import get_trainer
+from utils.metrics import Accuracy, Precision, Recall, F1Score
 from utils.data_utils import get_dataloaders
 from models import get_model
 import torch
@@ -37,6 +38,7 @@ def test_fine_tuning_loop():
     criterion = torch.nn.CrossEntropyLoss()
     optimizer_class = torch.optim.Adam
     optimizer_params = {'lr': CONFIG_TEST['training']['learning_rate']}
+    metrics = [Accuracy(), Precision(), Recall(), F1Score()]
     
     trainer = get_trainer(CONFIG_TEST['trainer'], model=model, device=device)
     
@@ -45,7 +47,8 @@ def test_fine_tuning_loop():
         criterion=criterion,
         optimizer_class=optimizer_class,
         optimizer_params=optimizer_params,
-        freeze_until_layer=CONFIG_TEST['training'].get('freeze_until_layer')
+        freeze_until_layer=CONFIG_TEST['training'].get('freeze_until_layer'),
+        metrics=metrics
     )
     trainer.train(
         train_loader=train_loader,
@@ -58,7 +61,8 @@ def test_fine_tuning_loop():
          criterion=criterion,
          optimizer_class=optimizer_class,
          optimizer_params={'lr': 0.00001},
-         freeze_until_layer=None
+         freeze_until_layer=None,
+         metrics=metrics
      )
     
     trainer.train(
@@ -67,9 +71,12 @@ def test_fine_tuning_loop():
         verbose=False
     )
     
-    accuracy = trainer.evaluate(
+    metrics_results = trainer.evaluate(
         test_loader=test_loader,
         verbose=False
     )
 
-    assert accuracy >= 0, "Accuracy should be non-negative after fine-tuning"
+    assert metrics_results[0] >= 0, "Accuracy should be non-negative"
+    assert metrics_results[1] >= 0, "Precision should be non-negative"
+    assert metrics_results[2] >= 0, "Recall should be non-negative"
+    assert metrics_results[3] >= 0, "F1 Score should be non-negative"

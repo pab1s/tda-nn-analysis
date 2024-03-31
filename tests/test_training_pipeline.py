@@ -1,5 +1,6 @@
 import pytest
 from trainers import get_trainer
+from utils.metrics import Accuracy, Precision, Recall, F1Score
 from utils.data_utils import get_dataloaders
 from models import get_model
 import torch
@@ -36,22 +37,27 @@ def test_training_loop():
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam
     optimizer_params = {'lr': CONFIG_TEST['training']['learning_rate']}
+    metrics = [Accuracy(), Precision(), Recall(), F1Score()]
 
     trainer = get_trainer(CONFIG_TEST['trainer'], model=model, device=device)
     
     trainer.build(
         criterion=criterion,
         optimizer_class=optimizer,
-        optimizer_params=optimizer_params
+        optimizer_params=optimizer_params,
+        metrics=metrics
     )
     trainer.train(
         train_loader=train_loader,
         num_epochs=CONFIG_TEST['training']['num_epochs'],
         verbose=False
     )
-    accuracy = trainer.evaluate(
+    metrics_results = trainer.evaluate(
         test_loader=test_loader,
         verbose=False
     )
 
-    assert accuracy >= 0, "Accuracy should be non-negative"
+    assert metrics_results[0] >= 0, "Accuracy should be non-negative"
+    assert metrics_results[1] >= 0, "Precision should be non-negative"
+    assert metrics_results[2] >= 0, "Recall should be non-negative"
+    assert metrics_results[3] >= 0, "F1 Score should be non-negative"

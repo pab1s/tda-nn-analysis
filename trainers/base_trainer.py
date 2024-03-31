@@ -11,11 +11,13 @@ class BaseTrainer():
         self.criterion = None
         self.optimizer = None
         self.scheduler = None
+        self.metrics = []
 
-    def build(self, criterion, optimizer_class, optimizer_params={}, scheduler=None, freeze_until_layer=None) -> None:
+    def build(self, criterion, optimizer_class, optimizer_params={}, scheduler=None, freeze_until_layer=None, metrics=[]) -> None:
         """ Build the model, criterion, optimizer and scheduler. """
         self.criterion = criterion
         self.scheduler = scheduler
+        self.metrics = metrics
 
         if freeze_until_layer is not None:
             self.freeze_layers(freeze_until_layer=freeze_until_layer)
@@ -41,47 +43,76 @@ class BaseTrainer():
             "The train_epoch method must be implemented by the subclass.")
 
     def train(self, train_loader, num_epochs, log_path=None, plot_path=None, verbose=True) -> None:
-        """ Train the model for a given number of epochs. """
+        """Train the model for a given number of epochs, calculating metrics at the end of each epoch."""
         training_epoch_losses = []
-        valid_epoch_losses = []
+        metric_values = {metric.name: [] for metric in self.metrics}
+
         start_time = time.time()
 
         for epoch in range(num_epochs):
-            epoch_loss = self._train_epoch(
-                train_loader, epoch, num_epochs, verbose)
+            epoch_loss = self._train_epoch(train_loader, epoch, num_epochs, verbose)
             training_epoch_losses.append(epoch_loss)
 
+            # Reset metrics at the start of each epoch
+            epoch_metric_values = {metric.name: 0 for metric in self.metrics}
+            self.model.eval()
+
+            with torch.no_grad():
+                for images, labels in train_loader:
+                    images, labels = images.to(self.device), labels.to(self.device)
+                    outputs = self.model(images)
+
+                    for metric in self.metrics:
+                        metric_value = metric(labels, outputs)
+                        epoch_metric_values[metric.name] += metric_value
+
+            # Average metric values across batches and log them
+            num_batches = len(train_loader)
+            for metric_name in epoch_metric_values.keys():
+                epoch_metric_values[metric_name] /= num_batches
+                metric_values[metric_name].append(epoch_metric_values[metric_name])
+
+                if verbose:
+                    print(f"Epoch {epoch+1}/{num_epochs}, {metric_name}: {epoch_metric_values[metric_name]:.4f}")
+
             if verbose:
-                print(
-                    f"Epoch {epoch+1}/{num_epochs}, Training loss: {epoch_loss:.4f}")
-                
+                print(f"Epoch {epoch+1}/{num_epochs}, Training loss: {epoch_loss:.4f}")
+
+            self.model.train()
+
             if log_path is not None:
                 log_to_csv(training_epoch_losses, log_path)
 
         elapsed_time = time.time() - start_time
-
         if verbose:
             print(f"Training completed in: {elapsed_time:.2f} seconds")
 
         if plot_path is not None:
             plot_loss(training_epoch_losses, plot_path)
 
-    def evaluate(self, test_loader, verbose=True) -> float:
-        """ Evaluate the model on the test set. """
-        correct = 0
-        total = 0
+    def evaluate(self, test_loader, metrics=[], verbose=True) -> dict:
+        """ Evaluate the model on the test set using provided metrics. """
+        if len(metrics) == 0:
+            self.metrics = metrics
 
         self.model.eval()
+        metrics_results = {metric.name: 0 for metric in self.metrics}
 
         with torch.no_grad():
             for images, labels in test_loader:
                 images, labels = images.to(self.device), labels.to(self.device)
                 outputs = self.model(images)
-                _, predicted = torch.max(outputs, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
 
-        accuracy = 100 * correct / total
+                for metric in self.metrics:
+                    metric_value = metric(labels, outputs)
+                    metrics_results[metric.name] += metric_value
+
+        num_batches = len(test_loader)
+        for metric in self.metrics:
+            metrics_results[metric.name] /= num_batches
+
         if verbose:
-            print(f"Accuracy: {accuracy}%")
-        return accuracy
+            for metric_name, metric_value in metrics_results.items():
+                print(f"{metric_name}: {metric_value:.4f}")
+
+        return metrics_results

@@ -76,7 +76,5 @@ def test_fine_tuning_loop():
         verbose=False
     )
 
-    assert metrics_results[0] >= 0, "Accuracy should be non-negative"
-    assert metrics_results[1] >= 0, "Precision should be non-negative"
-    assert metrics_results[2] >= 0, "Recall should be non-negative"
-    assert metrics_results[3] >= 0, "F1 Score should be non-negative"
+    assert len(metrics_results) == len(metrics)
+    assert all([v >= 0 for v in metrics_results.values()])

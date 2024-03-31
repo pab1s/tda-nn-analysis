@@ -94,7 +94,7 @@ class BaseTrainer(ABC):
 
     def evaluate(self, test_loader, metrics=[], verbose=True) -> dict:
         """ Evaluate the model on the test set using provided metrics. """
-        if len(metrics) == 0:
+        if len(metrics) > 0:
             self.metrics = metrics
 
         self.model.eval()

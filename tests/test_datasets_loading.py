@@ -1,18 +1,24 @@
 import pytest
-from utils.data_utils import get_dataloaders
+from torchvision import transforms, datasets
+from datasets.dataset import get_dataset
 
-def test_load_cifar10():
-    config = {
-        'data': {
-            'name': 'CIFAR10',
-            'dataset_path': './data',
-        },
-        'training': {
-            'batch_size': 4,
-        }
-    }
-    train_loader, test_loader = get_dataloaders(config)
-    # Check that loaders are not empty
-    assert len(train_loader) > 0, "CIFAR10 training loader should not be empty"
-    assert len(test_loader) > 0, "CIFAR10 test loader should not be empty"
+@pytest.fixture
+def basic_transform():
+    return transforms.Compose([transforms.ToTensor()])
 
+def test_cifar10_download_and_load(basic_transform):
+    root_dir = './data'
+    train_dataset = get_dataset('CIFAR10', root_dir=root_dir, train=True, transform=basic_transform)
+    test_dataset = get_dataset('CIFAR10', root_dir=root_dir, train=False, transform=basic_transform)
+
+    assert isinstance(train_dataset, datasets.CIFAR10), "The train dataset should be an instance of datasets.CIFAR10"
+    assert isinstance(test_dataset, datasets.CIFAR10), "The test dataset should be an instance of datasets.CIFAR10"
+
+    # CIFAR10 dataset specific checks
+    assert len(train_dataset) == 50000, "The CIFAR10 train dataset should contain 50,000 images."
+    assert len(test_dataset) == 10000, "The CIFAR10 test dataset should contain 10,000 images."
+
+def test_unsupported_dataset(basic_transform):
+    root_dir = './data'
+    with pytest.raises(ValueError):
+        _ = get_dataset('UnsupportedDataset', root_dir=root_dir, train=True, transform=basic_transform)

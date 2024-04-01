@@ -1,8 +1,9 @@
 import torch
 from utils.plotting import plot_loss
-from utils.logging import log_to_csv
+from utils.logging import log_to_csv, log_epoch_results
 from abc import ABC, abstractmethod
 import time
+from typing import Tuple
 
 
 class BaseTrainer(ABC):
@@ -44,77 +45,74 @@ class BaseTrainer(ABC):
         raise NotImplementedError(
             "The train_epoch method must be implemented by the subclass.")
 
-    def train(self, train_loader, num_epochs, log_path=None, plot_path=None, verbose=True) -> None:
-        """Train the model for a given number of epochs, calculating metrics at the end of each epoch."""
+    def train(self, train_loader, num_epochs, valid_loader=None, log_path=None, plot_path=None, verbose=True) -> None:
+        """
+        Train the model for a given number of epochs, calculating metrics at the end of each epoch
+        for both training and validation sets.
+        """
         training_epoch_losses = []
-        metric_values = {metric.name: [] for metric in self.metrics}
+        validation_epoch_losses = []
+        metric_values = {metric.name: {'train': [], 'valid': []} for metric in self.metrics}
 
         start_time = time.time()
 
         for epoch in range(num_epochs):
-            epoch_loss = self._train_epoch(train_loader, epoch, num_epochs, verbose)
-            training_epoch_losses.append(epoch_loss)
+            epoch_loss_train = self._train_epoch(train_loader, epoch, num_epochs, verbose)
+            training_epoch_losses.append(epoch_loss_train)
 
-            # Reset metrics at the start of each epoch
-            epoch_metric_values = {metric.name: 0 for metric in self.metrics}
-            self.model.eval()
+            _, epoch_metrics_train = self.evaluate(train_loader, self.metrics, verbose=False)
 
-            with torch.no_grad():
-                for images, labels in train_loader:
-                    images, labels = images.to(self.device), labels.to(self.device)
-                    outputs = self.model(images)
+            if valid_loader is not None:
+                epoch_loss_valid, epoch_metrics_valid = self.evaluate(valid_loader, self.metrics, verbose=False)
+                validation_epoch_losses.append(epoch_loss_valid)
+            else:
+                epoch_metrics_valid = {metric.name: None for metric in self.metrics}
 
-                    for metric in self.metrics:
-                        metric_value = metric(labels, outputs)
-                        epoch_metric_values[metric.name] += metric_value
-
-            # Average metric values across batches and log them
-            num_batches = len(train_loader)
-            for metric_name in epoch_metric_values.keys():
-                epoch_metric_values[metric_name] /= num_batches
-                metric_values[metric_name].append(epoch_metric_values[metric_name])
-
-                if verbose:
-                    print(f"Epoch {epoch+1}/{num_epochs}, {metric_name}: {epoch_metric_values[metric_name]:.4f}")
+            for metric_name in metric_values.keys():
+                metric_values[metric_name]['train'].append(epoch_metrics_train[metric_name])
+                metric_values[metric_name]['valid'].append(epoch_metrics_valid.get(metric_name))
 
             if verbose:
-                print(f"Epoch {epoch+1}/{num_epochs}, Training loss: {epoch_loss:.4f}")
-
-            self.model.train()
+                log_epoch_results(epoch, num_epochs, epoch_loss_train, epoch_metrics_train, epoch_metrics_valid)
 
             if log_path is not None:
-                log_to_csv(training_epoch_losses, log_path)
+                log_to_csv(training_epoch_losses, validation_epoch_losses, metric_values, log_path)
 
         elapsed_time = time.time() - start_time
         if verbose:
             print(f"Training completed in: {elapsed_time:.2f} seconds")
 
         if plot_path is not None:
-            plot_loss(training_epoch_losses, plot_path)
+            plot_loss(training_epoch_losses, validation_epoch_losses, plot_path)
 
-    def evaluate(self, test_loader, metrics=[], verbose=True) -> dict:
-        """ Evaluate the model on the test set using provided metrics. """
-        if len(metrics) > 0:
-            self.metrics = metrics
+    def evaluate(self, data_loader, metrics=None, verbose=True) -> Tuple[float, dict]:
+        """
+        Evaluate the model on a given dataset.
+        """
+        if metrics is None:
+            metrics = self.metrics
 
         self.model.eval()
-        metrics_results = {metric.name: 0 for metric in self.metrics}
-
+        total_loss = 0
+        metric_results = {metric.name: 0 for metric in metrics}
         with torch.no_grad():
-            for images, labels in test_loader:
+            for images, labels in data_loader:
                 images, labels = images.to(self.device), labels.to(self.device)
                 outputs = self.model(images)
-
-                for metric in self.metrics:
+                loss = self.criterion(outputs, labels)
+                total_loss += loss.item()
+                for metric in metrics:
                     metric_value = metric(labels, outputs)
-                    metrics_results[metric.name] += metric_value
+                    metric_results[metric.name] += metric_value
 
-        num_batches = len(test_loader)
-        for metric in self.metrics:
-            metrics_results[metric.name] /= num_batches
+        num_batches = len(data_loader)
+        avg_loss = total_loss / num_batches
+        for metric_name in metric_results.keys():
+            metric_results[metric_name] /= num_batches
 
         if verbose:
-            for metric_name, metric_value in metrics_results.items():
+            print(f"Evaluation - Loss: {avg_loss:.4f}")
+            for metric_name, metric_value in metric_results.items():
                 print(f"{metric_name}: {metric_value:.4f}")
 
-        return metrics_results
+        return avg_loss, metric_results

@@ -7,6 +7,21 @@ def basic_transform():
     return transforms.Compose([transforms.ToTensor()])
 
 def test_cifar10_download_and_load(basic_transform):
+    """
+    Test function to download and load CIFAR10 dataset.
+
+    Args:
+        basic_transform: A transformation to apply to the dataset.
+
+    Returns:
+        None
+
+    Raises:
+        AssertionError: If the train dataset is not an instance of datasets.CIFAR10.
+        AssertionError: If the test dataset is not an instance of datasets.CIFAR10.
+        AssertionError: If the CIFAR10 train dataset does not contain 50,000 images.
+        AssertionError: If the CIFAR10 test dataset does not contain 10,000 images.
+    """
     root_dir = './data'
     train_dataset = get_dataset('CIFAR10', root_dir=root_dir, train=True, transform=basic_transform)
     test_dataset = get_dataset('CIFAR10', root_dir=root_dir, train=False, transform=basic_transform)

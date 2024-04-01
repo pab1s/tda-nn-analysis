@@ -7,6 +7,25 @@ from typing import Tuple
 
 
 class BaseTrainer(ABC):
+    """
+    Base class for trainers in the tda-nn-separability project.
+
+    Attributes:
+        model (nn.Module): The model to be trained.
+        device (torch.device): The device to be used for training.
+        criterion: The loss function used for training.
+        optimizer: The optimizer used for training.
+        scheduler: The learning rate scheduler.
+        metrics (list): List of metrics used for evaluation during training.
+
+    Methods:
+        build: Build the model, criterion, optimizer, and scheduler.
+        freeze_layers: Freeze layers up to a specified layer.
+        unfreeze_all_layers: Unfreeze all layers of the model.
+        train: Train the model for a given number of epochs.
+        evaluate: Evaluate the model on a given dataset.
+    """
+
     def __init__(self, model, device):
         self.model = model
         self.device = device
@@ -49,6 +68,14 @@ class BaseTrainer(ABC):
         """
         Train the model for a given number of epochs, calculating metrics at the end of each epoch
         for both training and validation sets.
+
+        Args:
+            train_loader: The data loader for the training set.
+            num_epochs (int): The number of epochs to train the model.
+            valid_loader: The data loader for the validation set (optional).
+            log_path: The path to save the training log (optional).
+            plot_path: The path to save the training plot (optional).
+            verbose (bool): Whether to print training progress (default: True).
         """
         training_epoch_losses = []
         validation_epoch_losses = []
@@ -88,6 +115,14 @@ class BaseTrainer(ABC):
     def evaluate(self, data_loader, metrics=None, verbose=True) -> Tuple[float, dict]:
         """
         Evaluate the model on a given dataset.
+
+        Args:
+            data_loader: The data loader for the dataset.
+            metrics (list): List of metrics to evaluate (optional).
+            verbose (bool): Whether to print evaluation results (default: True).
+
+        Returns:
+            Tuple[float, dict]: The average loss and metric results.
         """
         if metrics is None:
             metrics = self.metrics

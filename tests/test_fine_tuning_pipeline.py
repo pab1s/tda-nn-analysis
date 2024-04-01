@@ -13,7 +13,27 @@ with open("./config/config_test.yaml", 'r') as file:
     CONFIG_TEST = yaml.safe_load(file)
 
 def test_fine_tuning_loop():
-    """Test a short fine-tuning loop to ensure pipeline works with BasicTrainer."""
+    """
+    Test the fine-tuning loop of the model training pipeline.
+    
+    This function performs the following steps:
+    1. Sets the device to CUDA if available, otherwise to CPU.
+    2. Retrieves the data transforms using the CONFIG_TEST dictionary.
+    3. Gets the dataset using the specified name and root directory from CONFIG_TEST.
+    4. Splits the dataset into train, validation, and test sets.
+    5. Creates data loaders for the train, validation, and test sets.
+    6. Retrieves the model using the specified name, number of classes, and pretrained flag from CONFIG_TEST.
+    7. Defines the criterion, optimizer, and metrics for training.
+    8. Initializes the trainer object using the CONFIG_TEST dictionary.
+    9. Builds the trainer for fine-tuning, optionally freezing layers until a specified layer.
+    10. Trains the model using the train and validation loaders for a specified number of epochs.
+    11. Unfreezes all layers of the model.
+    12. Builds the trainer for fine-tuning without freezing any layers.
+    13. Trains the model again using the train and validation loaders for a specified number of epochs.
+    14. Evaluates the model on the test set and retrieves the metrics results.
+    15. Asserts that the length of the metrics results is equal to the number of metrics.
+    16. Asserts that all metric values are greater than or equal to 0.
+    """
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     

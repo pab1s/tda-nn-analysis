@@ -2,6 +2,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def plot_loss(training_epoch_losses, validation_epoch_losses, plot_path):
+    """
+    Plots the training and validation losses over epochs.
+
+    Args:
+        training_epoch_losses (list): List of training losses for each epoch.
+        validation_epoch_losses (list): List of validation losses for each epoch.
+        plot_path (str): Path to save the plot.
+
+    Returns:
+        None
+    """
     plt.figure(figsize=(10, 5))
     
     epochs = np.arange(1, len(training_epoch_losses) + 1)

@@ -13,7 +13,26 @@ with open("./config/config_test.yaml", 'r') as file:
     CONFIG_TEST = yaml.safe_load(file)
 
 def test_training_loop():
-    """Test a short training loop to ensure pipeline works with BasicTrainer."""
+    """
+    Test a short training loop to ensure pipeline works with BasicTrainer.
+
+    This function performs a short training loop using the BasicTrainer class to ensure that the training pipeline is functioning correctly.
+
+    The function performs the following steps:
+    1. Sets the device to CUDA if available, otherwise sets it to CPU.
+    2. Retrieves the necessary transforms using the CONFIG_TEST dictionary.
+    3. Retrieves the dataset using the CONFIG_TEST dictionary.
+    4. Splits the dataset into train, validation, and test sets.
+    5. Creates data loaders for the train, validation, and test sets.
+    6. Retrieves the model using the CONFIG_TEST dictionary.
+    7. Defines the criterion, optimizer, and metrics for training.
+    8. Initializes the trainer using the CONFIG_TEST dictionary.
+    9. Builds the trainer with the specified criterion, optimizer, and metrics.
+    10. Trains the model using the train and validation data loaders.
+    11. Evaluates the model using the test data loader.
+    12. Asserts that the number of metrics results is equal to the number of metrics.
+    13. Asserts that all metric values are greater than or equal to 0.
+    """
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

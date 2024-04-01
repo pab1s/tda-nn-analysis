@@ -2,6 +2,21 @@ from torchvision.datasets import CIFAR10, CIFAR100, MNIST, FakeData
 from datasets.car_dataset import CarDataset
 
 def get_dataset(name, root_dir, train=None, transform=None):
+    """
+    Returns a dataset based on the given name.
+
+    Args:
+        name (str): The name of the dataset.
+        root_dir (str): The root directory where the dataset is stored.
+        train (bool, optional): If True, returns the training set. If False, returns the test set. Defaults to None.
+        transform (callable, optional): A function/transform that takes in an image and returns a transformed version. Defaults to None.
+
+    Returns:
+        torch.utils.data.Dataset: The requested dataset.
+
+    Raises:
+        ValueError: If the dataset name is not supported.
+    """
     if name == 'CIFAR10':
         return CIFAR10(root=root_dir, train=train, download=True, transform=transform)
     elif name == 'CIFAR100':

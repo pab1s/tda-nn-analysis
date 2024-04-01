@@ -11,7 +11,6 @@ def test_model_initialization_and_forward_pass(model_func, model_name):
     model = model_func(model_name, num_classes=10, pretrained=False)
     assert model is not None, f"{model_name} should be initialized"
     
-    # Forward pass test
     dummy_input = torch.randn(2, 3, 224, 224)
     output = model(dummy_input)
     assert output.shape == (2, 10), f"Output shape of {model_name} should be (2, 10) for batch size of 2 and 10 classes"

@@ -1,5 +1,7 @@
 trainer: "BasicTrainer"
 
+random_seed: 43
+
 model:
   name: efficientnet_b0
   num_classes: 10
@@ -8,16 +10,24 @@ model:
 training:
   batch_size: 32
   num_epochs: 2   # Just maintained for compatibility
-  initial_epochs: 2
-  fine_tuning_epochs: 5
+  initial_epochs: 1
+  fine_tuning_epochs: 0
   learning_rate: 0.001  # Also maintained for compatibility
   fine_tuning_learning_rate: 0.0001
   freeze_until_layer: "classifier.1.weight"
   final_fine_tuning_learning_rate: 0.00001
 
 data:
-  name: CIFAR10
+  name: "CIFAR10"
   dataset_path: "./data/"
+  test_size: 0.2
+  val_size: 0.1
+  transforms:
+    - name: Resize
+      parameters:
+        size: [64, 64]
+    
+    - name: ToTensor
 
 paths:
   log_path: "./logs/"

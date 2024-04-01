@@ -1,5 +1,7 @@
 trainer: "BasicTrainer"
 
+random_seed: 43
+
 model:
   name: efficientnet_b0
   num_classes: 10
@@ -13,6 +15,14 @@ training:
 data:
   name: "CIFAR10"
   dataset_path: "./data/"
+  test_size: 0.2
+  val_size: 0.1
+  transforms:
+    - name: Resize
+      parameters:
+        size: [64, 64]
+    
+    - name: ToTensor
 
 paths:
   log_path: "./logs/"

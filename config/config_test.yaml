@@ -1,0 +1,18 @@
+trainer: "BasicTrainer"
+
+data:
+  name: "FakeData"
+  dataset_path: ./data
+  transforms:
+    - name: ToTensor
+
+model:
+  name: efficientnet_b0
+  num_classes: 10
+  pretrained: True
+
+training:
+  batch_size: 64
+  num_epochs: 1
+  learning_rate: 0.0001
+  freeze_until_layer: classifier.1.weight

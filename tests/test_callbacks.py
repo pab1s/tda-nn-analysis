@@ -1,6 +1,6 @@
 import pytest
 from trainers import get_trainer
-from callbacks.early_stopping import EarlyStopping
+from callbacks import EarlyStopping
 from utils.metrics import Accuracy
 from datasets.transformations import get_transforms
 from datasets.dataset import get_dataset
@@ -53,10 +53,9 @@ def test_early_stopping():
     early_stopping_callback = EarlyStopping(patience=2, verbose=True, monitor='val_loss', delta=0.1)
     trainer.train(
         train_loader=train_loader,
-        num_epochs=4,  # Intentionally, one more epoch than patience as early stopping should trigger
+        num_epochs=3,  # Intentionally, one more epoch than patience as early stopping should trigger
         valid_loader=test_loader,
         callbacks=[early_stopping_callback],
-        verbose=False
     )
 
     assert early_stopping_callback.early_stop, "Early stopping did not trigger as expected."

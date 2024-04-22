@@ -79,11 +79,11 @@ def test_fine_tuning_loop():
         freeze_until_layer=CONFIG_TEST['training'].get('freeze_until_layer'),
         metrics=metrics
     )
+
     trainer.train(
         train_loader=train_loader,
         valid_loader=valid_loader,
         num_epochs=CONFIG_TEST['training']['num_epochs'],
-        verbose=False
     )
     
     trainer.unfreeze_all_layers()
@@ -99,7 +99,6 @@ def test_fine_tuning_loop():
         train_loader=train_loader,
         valid_loader=valid_loader,
         num_epochs=CONFIG_TEST['training']['num_epochs'],
-        verbose=False
     )
     
     _, metrics_results = trainer.evaluate(

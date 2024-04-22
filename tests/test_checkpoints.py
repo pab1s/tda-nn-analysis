@@ -53,7 +53,6 @@ def test_checkpoint_functionality():
         train_loader=train_loader,
         num_epochs=6,
         checkpoint_dir=checkpoint_dir,
-        verbose=False
     )
 
     checkpoint_path = os.path.join(checkpoint_dir, 'checkpoint_epoch_5.pth')
@@ -68,7 +67,6 @@ def test_checkpoint_functionality():
         train_loader=train_loader,
         num_epochs=2,
         checkpoint_dir=checkpoint_dir,
-        verbose=False
     )
 
     _, metrics_results = trainer.evaluate(test_loader, verbose=False)

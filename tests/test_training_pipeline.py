@@ -80,7 +80,6 @@ def test_training_loop():
         train_loader=train_loader,
         valid_loader=valid_loader,
         num_epochs=CONFIG_TEST['training']['num_epochs'],
-        verbose=False
     )
     _, metrics_results = trainer.evaluate(
         data_loader=test_loader,

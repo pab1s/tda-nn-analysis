@@ -24,6 +24,16 @@ def get_efficientnet(model_name, num_classes, pretrained=True):
         model = models.efficientnet_b1(weights=weights)
     elif model_name == "efficientnet_b2":
         model = models.efficientnet_b2(weights=weights)
+    elif model_name == "efficientnet_b3":
+        model = models.efficientnet_b3(weights=weights)
+    elif model_name == "efficientnet_b4":
+        model = models.efficientnet_b4(weights=weights)
+    elif model_name == "efficientnet_b5":
+        model = models.efficientnet_b5(weights=weights)
+    elif model_name == "efficientnet_b6":
+        model = models.efficientnet_b6(weights=weights)
+    elif model_name == "efficientnet_b7":
+        model = models.efficientnet_b7(weights=weights)
     else:
         raise ValueError("Unsupported EfficientNet version")
     

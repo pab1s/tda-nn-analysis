@@ -24,6 +24,10 @@ def get_resnet(model_name, num_classes, pretrained=True):
         model = models.resnet34(weights=weights)
     elif model_name == "resnet50":
         model = models.resnet50(weights=weights)
+    elif model_name == "resnet101":
+        model = models.resnet101(weights=weights)
+    elif model_name == "resnet152":
+        model = models.resnet152(weights=weights)
     else:
         raise ValueError("Unsupported ResNet version")
     

@@ -4,7 +4,7 @@ from datetime import datetime
 from torch.utils.data import DataLoader, random_split
 from datasets.dataset import get_dataset
 from datasets.transformations import get_transforms
-from utils.metrics import Accuracy, Precision, Recall, F1Score
+from utils.metrics import Accuracy, Precision
 from models import get_model
 from trainers import get_trainer
 from os import path
@@ -62,7 +62,6 @@ def main(config_path):
         train_loader=train_loader,
         valid_loader=valid_loader,
         num_epochs=config['training']['initial_epochs'],
-        log_path=log_filename,
         plot_path=plot_filename
     )
 
@@ -83,7 +82,6 @@ def main(config_path):
         train_loader=train_loader,
         valid_loader=valid_loader,
         num_epochs=config['training']['fine_tuning_epochs'],
-        log_path=log_filename,
         plot_path=plot_filename
     )
 

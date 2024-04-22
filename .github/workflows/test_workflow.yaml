@@ -21,8 +21,7 @@ jobs:
         environment-file: environment.yaml
         activate-environment: tda-nn-separability
         python-version: 3.10
-        channels:
-          - conda-forge
+        channels: conda-forge
 
     - name: Install Dependencies
       run: |

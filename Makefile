@@ -2,7 +2,7 @@
 
 # Parameters
 ENV_NAME := tda-nn-separability
-PYTHON_VERSION := 3.11
+PYTHON_VERSION := 3.10
 ENV_FILE := environment.yaml
 
 # Default goal

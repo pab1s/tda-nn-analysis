@@ -14,13 +14,13 @@ training:
 
 data:
   name: "CIFAR10"
-  dataset_path: "./data/"
+  dataset_path: "./data/processed"
   test_size: 0.2
   val_size: 0.1
   transforms:
     - name: Resize
       parameters:
-        size: [64, 64]
+        size: [224, 224]
     
     - name: ToTensor
 

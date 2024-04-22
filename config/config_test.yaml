@@ -2,7 +2,7 @@ trainer: "BasicTrainer"
 
 data:
   name: "FakeData"
-  dataset_path: ./data
+  dataset_path: "./data"
   transforms:
     - name: ToTensor
 

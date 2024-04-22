@@ -3,29 +3,29 @@ trainer: "BasicTrainer"
 random_seed: 43
 
 model:
-  name: efficientnet_b0
-  num_classes: 10
+  name: efficientnet_b1
+  num_classes: 394
   pretrained: true
 
 training:
   batch_size: 32
   num_epochs: 2   # Just maintained for compatibility
   initial_epochs: 1
-  fine_tuning_epochs: 0
+  fine_tuning_epochs: 1
   learning_rate: 0.001  # Also maintained for compatibility
   fine_tuning_learning_rate: 0.0001
-  freeze_until_layer: "classifier.1.weight"
+  freeze_until_layer: "classifier.1.weight"  # "fc.weight"
   final_fine_tuning_learning_rate: 0.00001
 
 data:
-  name: "CIFAR10"
-  dataset_path: "./data/"
+  name: "CarDataset"
+  dataset_path: "./data/processed/BD-461"
   test_size: 0.2
   val_size: 0.1
   transforms:
     - name: Resize
       parameters:
-        size: [64, 64]
+        size: [240, 240]
     
     - name: ToTensor
 

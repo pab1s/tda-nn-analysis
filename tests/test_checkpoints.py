@@ -1,19 +1,20 @@
 import pytest
 import os
+import yaml
+import torch
 from trainers import get_trainer
 from utils.metrics import Accuracy, Precision, Recall, F1Score
 from datasets.transformations import get_transforms
 from datasets.dataset import get_dataset
 from models import get_model
-import torch
-import yaml
+from callbacks import Checkpoint
 
 CONFIG_TEST = {}
 
 with open("./config/config_test.yaml", 'r') as file:
     CONFIG_TEST = yaml.safe_load(file)
 
-def test_checkpoint_functionality():
+def test_checkpoint():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     transforms = get_transforms(CONFIG_TEST)
@@ -34,42 +35,48 @@ def test_checkpoint_functionality():
     model = get_model(CONFIG_TEST['model']['name'], CONFIG_TEST['model']['num_classes'], CONFIG_TEST['model']['pretrained']).to(device)
     
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam
-    optimizer_params = {'lr': CONFIG_TEST['training']['learning_rate']}
+    optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG_TEST['training']['learning_rate'])
     metrics = [Accuracy(), Precision(), Recall(), F1Score()]
 
     trainer = get_trainer(CONFIG_TEST['trainer'], model=model, device=device)
     
     checkpoint_dir = "./outputs/checkpoints/"
     os.makedirs(checkpoint_dir, exist_ok=True)
-    
+    checkpoint_callback = Checkpoint(
+        checkpoint_dir=checkpoint_dir,
+        model=model,
+        optimizer=optimizer,
+        save_freq=5,
+        verbose=False
+    )
+
     trainer.build(
         criterion=criterion,
-        optimizer_class=optimizer,
-        optimizer_params=optimizer_params,
+        optimizer_class=torch.optim.Adam,
+        optimizer_params={'lr': CONFIG_TEST['training']['learning_rate']},
         metrics=metrics
     )
+    
+    # Train the model and automatically save the checkpoint at the specified interval
     trainer.train(
         train_loader=train_loader,
         num_epochs=6,
-        checkpoint_dir=checkpoint_dir,
+        valid_loader=None,
+        callbacks=[checkpoint_callback]
     )
 
     checkpoint_path = os.path.join(checkpoint_dir, 'checkpoint_epoch_5.pth')
-    assert os.path.exists(checkpoint_dir), "Checkpoint file was not created."
+    assert os.path.exists(checkpoint_path), "Checkpoint file was not created."
 
+    # Zero out the model parameters to simulate a restart
     for param in model.parameters():
         param.data.zero_()
 
+    # Load the checkpoint
     trainer.load_checkpoint(checkpoint_path)
 
-    trainer.train(
-        train_loader=train_loader,
-        num_epochs=2,
-        checkpoint_dir=checkpoint_dir,
-    )
-
+    # Continue training or perform evaluation
     _, metrics_results = trainer.evaluate(test_loader, verbose=False)
     assert all([v >= 0 for v in metrics_results.values()]), "Metrics after resuming are not valid."
 
-test_checkpoint_functionality()
+test_checkpoint()

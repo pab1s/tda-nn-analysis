@@ -1,6 +1,4 @@
-import os
 import torch
-from utils.plotting import plot_loss
 from abc import ABC, abstractmethod
 import time
 from typing import Tuple
@@ -33,31 +31,8 @@ class BaseTrainer(ABC):
         self.optimizer = None
         self.scheduler = None
         self.metrics = []
-    
-    def save_checkpoint(self, save_path, epoch, train_losses, val_losses, logs) -> None:
-        """
-        Saves the current state of the training process.
-        Args:
-            save_path (str): Directory to save checkpoint files.
-            epoch (int): Current epoch number.
-            train_losses (list): List of training losses up to the current epoch.
-            val_losses (list): List of validation losses up to the current epoch.
-            logs (dict): Dictionary containing other metric values.
-        """
-        state = {
-            'epoch': epoch,
-            'model_state_dict': self.model.state_dict(),
-            'optimizer_state_dict': self.optimizer.state_dict(),
-            'train_losses': train_losses,
-            'val_losses': val_losses,
-            'logs': logs
-        }
-        if self.scheduler:
-            state['scheduler_state_dict'] = self.scheduler.state_dict()
-        
-        torch.save(state, os.path.join(save_path, f'checkpoint_epoch_{epoch+1}.pth'))
 
-    def load_checkpoint(self, load_path):
+    def load_checkpoint(self, load_path) -> dict:
         """
         Loads a checkpoint and resumes training or evaluation.
         Args:
@@ -110,7 +85,7 @@ class BaseTrainer(ABC):
             raise NotImplementedError(
                 "The train_epoch method must be implemented by the subclass.")
 
-    def train(self, train_loader, num_epochs, valid_loader=None, plot_path=None, checkpoint_dir=None, callbacks=None):
+    def train(self, train_loader, num_epochs, valid_loader=None, callbacks=None) -> None:
         """
         Train the model for a given number of epochs, calculating metrics at the end of each epoch
         for both training and validation sets.
@@ -119,8 +94,6 @@ class BaseTrainer(ABC):
             train_loader: The data loader for the training set.
             num_epochs (int): The number of epochs to train the model.
             valid_loader: The data loader for the validation set (optional).
-            plot_path: The path to save the training plot (optional).
-            checkpoint_dir: The directory to save model checkpoints (optional).
             callbacks: List of callback objects to use during training (optional).
         """
         logs = {}
@@ -138,6 +111,9 @@ class BaseTrainer(ABC):
 
         for epoch in range(num_epochs):
             epoch_start_time = time.time()
+
+            for callback in callbacks:
+                callback.on_epoch_begin(epoch, logs=logs)
 
             logs['epoch'] = epoch
             epoch_loss_train = self._train_epoch(train_loader, epoch, num_epochs)
@@ -157,14 +133,10 @@ class BaseTrainer(ABC):
                 logs['val_metrics'] = {}
 
             for callback in callbacks:
-                callback.on_epoch_begin(epoch, logs=logs)
                 callback.on_epoch_end(epoch, logs=logs)
 
             epoch_time = time.time() - epoch_start_time
             times.append(epoch_time)
-
-            if checkpoint_dir and (epoch + 1) % 5 == 0:
-                self.save_checkpoint(checkpoint_dir, epoch, training_epoch_losses, validation_epoch_losses, logs)
 
             if not all(callback.should_continue(logs=logs) for callback in callbacks):
                 print(f"Training stopped early at epoch {epoch + 1}.")
@@ -177,9 +149,6 @@ class BaseTrainer(ABC):
 
         elapsed_time = time.time() - start_time
         print(f"Training completed in: {elapsed_time:.2f} seconds")
-
-        if plot_path is not None:
-            plot_loss(training_epoch_losses, validation_epoch_losses, plot_path)
 
     def predict(self, instance) -> torch.Tensor:
         """

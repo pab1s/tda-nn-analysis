@@ -35,7 +35,7 @@ class BaseTrainer(ABC):
         self.scheduler = None
         self.metrics = []
     
-    def save_checkpoint(self, save_path, epoch, train_losses, val_losses, metric_values):
+    def save_checkpoint(self, save_path, epoch, train_losses, val_losses, metric_values) -> None:
         """
         Saves the current state of the training process.
         Args:
@@ -56,7 +56,7 @@ class BaseTrainer(ABC):
         if self.scheduler:
             state['scheduler_state_dict'] = self.scheduler.state_dict()
         
-        torch.save(state, os.path.join(save_path, f'checkpoint_epoch_{epoch}.pth'))
+        torch.save(state, os.path.join(save_path, f'checkpoint_epoch_{epoch+1}.pth'))
 
     def load_checkpoint(self, load_path):
         """
@@ -130,7 +130,6 @@ class BaseTrainer(ABC):
         training_epoch_losses = []
         validation_epoch_losses = []
         metric_values = {metric.name: {'train': [], 'valid': []} for metric in self.metrics}
-        metric_values['time'] = {'train': [], 'valid': []}
 
         start_time = time.time()
 

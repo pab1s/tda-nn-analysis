@@ -1,4 +1,5 @@
 from trainers.basic_trainer import BasicTrainer
+from trainers.naive_trainer import NaiveTrainer
 
 def get_trainer(trainer_name, **kwargs):
     """
@@ -16,5 +17,7 @@ def get_trainer(trainer_name, **kwargs):
     """
     if trainer_name == "BasicTrainer":
         return BasicTrainer(**kwargs)
+    if trainer_name == "NaiveTrainer":
+        return NaiveTrainer(**kwargs)
     else:
         raise ValueError(f"Trainer {trainer_name} not recognized.")

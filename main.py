@@ -3,6 +3,7 @@ import yaml
 from datetime import datetime
 from torch.utils.data import DataLoader, random_split
 from datasets.dataset import get_dataset
+from callbacks import EarlyStopping, CSVLogging, EpochResultsLogging
 from datasets.transformations import get_transforms
 from utils.metrics import Accuracy, Precision, Recall, F1Score
 from models import get_model
@@ -58,12 +59,22 @@ def main(config_path):
         metrics=metrics
     )
 
+    callbacks = [
+        CSVLogging(log_filename),
+        EpochResultsLogging(),
+        EarlyStopping(
+            monitor='val_loss', 
+            patience=2,
+            delta=0.1, 
+            verbose=True
+            )
+    ]
+
     trainer.train(
         train_loader=train_loader,
         valid_loader=valid_loader,
         num_epochs=config['training']['num_epochs'],
-        log_path=log_filename,
-        plot_path=plot_filename
+        callbacks=callbacks,
     )
     
     trainer.evaluate(data_loader=test_loader)

@@ -88,13 +88,16 @@ class BaseTrainer(ABC):
             plot_path: The path to save the training plot (optional).
             verbose (bool): Whether to print training progress (default: True).
         """
+        times = []
         training_epoch_losses = []
         validation_epoch_losses = []
         metric_values = {metric.name: {'train': [], 'valid': []} for metric in self.metrics}
+        metric_values['time'] = {'train': [], 'valid': []}
 
         start_time = time.time()
 
         for epoch in range(num_epochs):
+            epoch_start_time = time.time()
             epoch_loss_train = self._train_epoch(train_loader, epoch, num_epochs, verbose)
             training_epoch_losses.append(epoch_loss_train)
 
@@ -109,14 +112,18 @@ class BaseTrainer(ABC):
             for metric_name in metric_values.keys():
                 metric_values[metric_name]['train'].append(epoch_metrics_train[metric_name])
                 metric_values[metric_name]['valid'].append(epoch_metrics_valid.get(metric_name))
+            
+            epoch_time = time.time() - epoch_start_time
+            times.append(epoch_time)
 
             if verbose:
                 log_epoch_results(epoch, num_epochs, epoch_loss_train, epoch_metrics_train, epoch_metrics_valid)
 
             if log_path is not None:
-                log_to_csv(training_epoch_losses, validation_epoch_losses, metric_values, log_path)
+                log_to_csv(training_epoch_losses, validation_epoch_losses, metric_values, times, log_path)
 
         elapsed_time = time.time() - start_time
+        
         if verbose:
             print(f"Training completed in: {elapsed_time:.2f} seconds")
 

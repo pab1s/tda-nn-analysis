@@ -130,6 +130,22 @@ class BaseTrainer(ABC):
         if plot_path is not None:
             plot_loss(training_epoch_losses, validation_epoch_losses, plot_path)
 
+    def predict(self, instance) -> torch.Tensor:
+        """
+        Predict the output of the model for a given instance.
+
+        Args:
+            instance: The input instance to predict.
+
+        Returns:
+            torch.Tensor: The model's prediction.
+        """
+        self.model.eval()
+        with torch.no_grad():
+            instance = instance.to(self.device)
+            output = self.model(instance)
+        return output
+
     def evaluate(self, data_loader, metrics=None, verbose=True) -> Tuple[float, dict]:
         """
         Evaluate the model on a given dataset.

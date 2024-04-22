@@ -171,3 +171,4 @@ outputs/checkpoints/*.pth
 outputs/figures/*.png
 logs/
 
+/data

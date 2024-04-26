@@ -37,7 +37,7 @@ def test_fine_tuning_loop():
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    transforms = get_transforms(CONFIG_TEST)
+    transforms = get_transforms(CONFIG_TEST['data']['transforms'])
 
     data = get_dataset(
         name=CONFIG_TEST['data']['name'],

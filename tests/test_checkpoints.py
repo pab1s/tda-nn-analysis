@@ -17,7 +17,7 @@ with open("./config/config_test.yaml", 'r') as file:
 def test_checkpoint():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    transforms = get_transforms(CONFIG_TEST)
+    transforms = get_transforms(CONFIG_TEST['data']['transforms'])
     data = get_dataset(
         name=CONFIG_TEST['data']['name'],
         root_dir=CONFIG_TEST['data']['dataset_path'],

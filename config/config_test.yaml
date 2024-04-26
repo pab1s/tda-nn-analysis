@@ -4,7 +4,10 @@ data:
   name: "FakeData"
   dataset_path: "./data"
   transforms:
-    - name: ToTensor
+    - type: "Resize"
+      parameters:
+        size: [64, 64]
+    - type: "ToTensor"
 
 model:
   name: efficientnet_b0

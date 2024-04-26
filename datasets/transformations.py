@@ -1,41 +1,36 @@
-from torchvision import transforms
+from torchvision import transforms as T
 
-def get_transforms(config):
+def get_transforms(transform_configs):
     """
-    Returns a composed transformation object based on the provided configuration.
+    Returns a composed transformation object based on the provided list of configurations.
 
     Args:
-        config (dict): A dictionary containing the configuration for the transformations.
+        transform_configs (list of dict): A list containing dictionaries that specify each transformation.
 
     Returns:
         torchvision.transforms.Compose: A composed transformation object.
 
     Raises:
-        ValueError: If the specified transform is not recognized.
+        ValueError: If the specified transform is not recognized or parameters are missing.
 
     Example:
-        >>> config = {
-        >>>     'data': {
-        >>>         'transforms': [
-        >>>             {'name': 'RandomHorizontalFlip'},
-        >>>             {'name': 'RandomVerticalFlip'},
-        >>>             {'name': 'ToTensor'}
-        >>>         ]
-        >>>     }
-        >>> }
-        >>> transforms = get_transforms(config)
+        transform_configs = [
+            {'type': 'Resize', 'parameters': {'size': [240, 240]}},
+            {'type': 'ToTensor'},
+            {'type': 'Normalize', 'parameters': {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]}}
+        ]
+        transforms = get_transforms(transform_configs)
     """
     transform_list = []
-    for transform_config in config['data']['transforms']:
-        transform_name = transform_config['name']
+    for transform_config in transform_configs:
+        transform_type = transform_config['type']
         parameters = transform_config.get('parameters', {})
 
-        if hasattr(transforms, transform_name):
-            transform_class = getattr(transforms, transform_name)
-            transform = transform_class(**parameters)
+        if hasattr(T, transform_type):
+            transform_class = getattr(T, transform_type)
+            transform = transform_class(**parameters) if parameters else transform_class()
             transform_list.append(transform)
         else:
-            raise ValueError(f"Transform {transform_name} not recognized.")
+            raise ValueError(f"Transform {transform_type} not recognized.")
 
-    composed_transform = transforms.Compose(transform_list)
-    return composed_transform
+    return T.Compose(transform_list)

@@ -25,14 +25,42 @@ class ModelFactory(Factory):
         self.register("resnet101", lambda num_classes, pretrained=True: self.get_resnet("resnet101", num_classes, pretrained))
         self.register("resnet152", lambda num_classes, pretrained=True: self.get_resnet("resnet152", num_classes, pretrained))
 
+        # Register DenseNet models
+        self.register("densenet121", lambda num_classes, pretrained=True: self.get_densenet("densenet121", num_classes, pretrained))
+        self.register("densenet161", lambda num_classes, pretrained=True: self.get_densenet("densenet161", num_classes, pretrained))
+        self.register("densenet169", lambda num_classes, pretrained=True: self.get_densenet("densenet169", num_classes, pretrained))
+        self.register("densenet201", lambda num_classes, pretrained=True: self.get_densenet("densenet201", num_classes, pretrained))
+
     def get_efficientnet(self, model_name, num_classes, pretrained):
         model = models.__dict__[model_name](weights="DEFAULT" if pretrained else None)
         num_ftrs = model.classifier[1].in_features
-        model.classifier[1] = nn.Linear(num_ftrs, num_classes)
+        model.classifier[1] = nn.Sequential(
+            nn.Linear(num_ftrs, 256),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(256, num_classes)
+        )
         return model
 
     def get_resnet(self, model_name, num_classes, pretrained):
         model = models.__dict__[model_name](weights="DEFAULT" if pretrained else None)
         num_ftrs = model.fc.in_features
-        model.fc = nn.Linear(num_ftrs, num_classes)
+        model.fc = nn.Sequential(
+            nn.Linear(num_ftrs, 256),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(256, num_classes)
+        )
         return model
+
+    def get_densenet(self, model_name, num_classes, pretrained):
+        model = models.__dict__[model_name](weights="DEFAULT" if pretrained else None)
+        num_ftrs = model.classifier.in_features
+        model.classifier = nn.Sequential(
+            nn.Linear(num_ftrs, 256),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(256, num_classes)
+        )
+        return model
+    

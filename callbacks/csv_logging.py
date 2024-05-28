@@ -16,6 +16,7 @@ class CSVLogging(Callback):
     def __init__(self, csv_path):
         self.csv_path = csv_path
         self.headers_written = False
+        self.headers = []
 
     def on_epoch_end(self, epoch, logs=None):
         """
@@ -31,7 +32,7 @@ class CSVLogging(Callback):
         if logs is None:
             return
         
-        epoch_data = logs.get('epoch')
+        epoch_data = logs.get('epoch', epoch)
         train_loss = logs.get('train_loss')
         val_loss = logs.get('val_loss')
         train_metrics = logs.get('train_metrics', {})
@@ -42,13 +43,13 @@ class CSVLogging(Callback):
         metrics.update({f'val_{key}': value for key, value in val_metrics.items()})
 
         if not self.headers_written:
-            headers = ['epoch'] + list(metrics.keys())
+            self.headers = ['epoch'] + list(metrics.keys())
             with open(self.csv_path, 'w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(headers)
+                writer.writerow(self.headers)
                 self.headers_written = True
 
-        values = [epoch_data] + [metrics[key] for key in headers[1:]]  # Ensure the order matches headers
+        values = [epoch_data] + [metrics.get(key) for key in self.headers[1:]]
         with open(self.csv_path, 'a', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(values)

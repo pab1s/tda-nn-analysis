@@ -30,3 +30,27 @@ def plot_loss(training_epoch_losses, validation_epoch_losses, plot_path):
     plt.grid(True)
     plt.savefig(plot_path)
     plt.close()
+
+def plot_lr_vs_loss(log_lrs, losses, plot_path):
+    """
+    Plots the learning rate vs loss.
+
+    Args:
+        log_lrs (list): List of log learning rates.
+        losses (list): List of losses.
+        plot_path (str): Path to save the plot.
+
+    Returns:
+        None
+    """
+    plt.figure(figsize=(10, 5))
+    
+    plt.plot(log_lrs, losses, label="Learning Rate vs Loss", marker='o')
+    
+    plt.title("Learning Rate vs Loss")
+    plt.xlabel("Log Learning Rate")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(plot_path)
+    plt.close()

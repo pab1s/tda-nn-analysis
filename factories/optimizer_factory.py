@@ -12,3 +12,7 @@ class OptimizerFactory(Factory):
         if not creator:
             raise ValueError(f"Unknown configuration: {name}")
         return creator
+    
+    def update(self, optimizer, new_lr):
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = new_lr

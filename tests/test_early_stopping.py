@@ -8,14 +8,17 @@ from models import get_model
 import torch
 import yaml
 
-CONFIG_TEST = {}
-
+# Load test configuration
 with open("./config/config_test.yaml", 'r') as file:
     CONFIG_TEST = yaml.safe_load(file)
 
-def test_early_stopping():
+@pytest.mark.parametrize("patience,delta,num_epochs", [
+    (2, 0.1, 5),  # Patience of 2, delta of 0.1, and training for 5 epochs
+])
+def test_early_stopping(patience, delta, num_epochs):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # Data transformations and loading
     transforms = get_transforms(CONFIG_TEST['data']['transforms'])
     data = get_dataset(
         name=CONFIG_TEST['data']['name'],
@@ -24,9 +27,7 @@ def test_early_stopping():
         transform=transforms
     )
 
-    # Use a NaiveTrainer to test the early stopping
-    CONFIG_TEST['trainer'] = 'NaiveTrainer'
-
+    # Split data into training and testing sets
     train_size = int(0.64 * len(data))
     test_size = len(data) - train_size
     data_train, data_test = torch.utils.data.random_split(data, [train_size, test_size], generator=torch.Generator().manual_seed(42))
@@ -34,30 +35,39 @@ def test_early_stopping():
     train_loader = torch.utils.data.DataLoader(data_train, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=True)
     test_loader = torch.utils.data.DataLoader(data_test, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=False)
 
+    # Initialize model
     model = get_model(CONFIG_TEST['model']['name'], CONFIG_TEST['model']['num_classes'], CONFIG_TEST['model']['pretrained']).to(device)
     
+    # Initialize criterion and optimizer
     criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam
+    optimizer_class = torch.optim.Adam
     optimizer_params = {'lr': CONFIG_TEST['training']['learning_rate']}
     metrics = [Accuracy()]
 
+    # Get trainer and build it
     trainer = get_trainer(CONFIG_TEST['trainer'], model=model, device=device)
     
     trainer.build(
         criterion=criterion,
-        optimizer_class=optimizer,
+        optimizer_class=optimizer_class,
         optimizer_params=optimizer_params,
         metrics=metrics
     )
 
-    early_stopping_callback = EarlyStopping(patience=2, verbose=True, monitor='val_loss', delta=0.1)
+    # Initialize EarlyStopping callback
+    early_stopping_callback = EarlyStopping(patience=patience, verbose=True, monitor='val_loss', delta=delta)
+    
+    # Train the model
     trainer.train(
         train_loader=train_loader,
-        num_epochs=3,  # Intentionally, one more epoch than patience as early stopping should trigger
+        num_epochs=num_epochs,
         valid_loader=test_loader,
         callbacks=[early_stopping_callback],
     )
 
+    # Assert that early stopping was triggered
     assert early_stopping_callback.early_stop, "Early stopping did not trigger as expected."
 
-test_early_stopping()
+# Run the test
+if __name__ == "__main__":
+    pytest.main([__file__])

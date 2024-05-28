@@ -2,7 +2,7 @@ import torch
 from abc import ABC, abstractmethod
 import time
 from typing import Tuple
-
+from callbacks.early_stopping import EarlyStopping
 
 class BaseTrainer(ABC):
     """
@@ -133,6 +133,9 @@ class BaseTrainer(ABC):
                 logs['val_metrics'] = {}
 
             for callback in callbacks:
+                if isinstance(callback, EarlyStopping):
+                    callback.set_model_and_optimizer(self.model, self.optimizer)
+
                 callback.on_epoch_end(epoch, logs=logs)
 
             epoch_time = time.time() - epoch_start_time

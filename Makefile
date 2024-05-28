@@ -20,7 +20,7 @@ ifndef CONDA
 endif
 	@echo "Creating the Conda environment if it doesn't exist..."
 	@conda env list | grep -q '^$(ENV_NAME) ' || \
-	conda create --yes --name $(ENV_NAME) python=$(PYTHON_VERSION)
+	conda create --yes --prefix $(ENV_NAME) python=$(PYTHON_VERSION)
 
 # Install packages from an environment file or manually specified
 .PHONY: install

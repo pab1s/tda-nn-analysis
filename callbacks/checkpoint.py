@@ -15,7 +15,7 @@ class Checkpoint(Callback):
         verbose (bool, optional): Whether to print the checkpoint save path. Default is False.
     """
 
-    def __init__(self, checkpoint_dir, model, optimizer, scheduler=None, save_freq=1, verbose=False):
+    def __init__(self, checkpoint_dir, model, optimizer, scheduler=None, save_freq=5, verbose=False):
         self.checkpoint_dir = checkpoint_dir
         self.model = model
         self.optimizer = optimizer

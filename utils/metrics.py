@@ -73,84 +73,37 @@ class Accuracy(Metric):
             correct += (predicted == y_true).sum().item()
         return correct / total
 
-
 class Precision(Metric):
-    """
-    Precision metric calculates the ratio of true positive predictions to the total number of positive predictions.
-
-    Args:
-        None
-
-    Returns:
-        precision (float): The precision value.
-
-    Example usage:
-        precision = Precision()
-        precision_value = precision(y_true, y_pred)
-    """
-
     def __init__(self):
         super().__init__("precision")
 
     def __call__(self, y_true, y_pred):
-        _, predictions = torch.max(y_pred, 1)
-        # predictions = y_pred > threshold  # For binary classification
-        true_positive = (predictions == y_true)[predictions == 1].sum().item()
-        predicted_positive = (predictions == 1).sum().item()
-        precision = true_positive / predicted_positive if predicted_positive > 0 else 0
-        return precision
-
+        with torch.no_grad():
+            _, predictions = torch.max(y_pred, 1)
+            unique_classes = torch.unique(y_true)
+            precision_sum = 0
+            for cls in unique_classes:
+                true_positive = (predictions == cls)[y_true == cls].sum().item()
+                predicted_positive = (predictions == cls).sum().item()
+                precision_sum += true_positive / predicted_positive if predicted_positive > 0 else 0
+            return precision_sum / len(unique_classes)
 
 class Recall(Metric):
-    """
-    Calculates the recall metric for binary classification tasks.
-
-    Recall measures the ability of a model to find all the relevant cases (true positives) in a dataset.
-    It is defined as the ratio of true positives to the sum of true positives and false negatives.
-
-    Args:
-        None
-
-    Returns:
-        float: The recall value.
-
-    Example:
-        >>> recall = Recall()
-        >>> y_true = [1, 0, 1, 1, 0]
-        >>> y_pred = [0.8, 0.2, 0.6, 0.9, 0.3]
-        >>> recall_value = recall(y_true, y_pred)
-        >>> print(recall_value)
-        0.6666666666666666
-    """
-
     def __init__(self):
         super().__init__("recall")
 
     def __call__(self, y_true, y_pred):
-        _, predictions = torch.max(y_pred, 1)
-        # predictions = y_pred > threshold  # For binary classification
-        true_positive = (predictions == y_true)[y_true == 1].sum().item()
-        actual_positive = (y_true == 1).sum().item()
-        recall = true_positive / actual_positive if actual_positive > 0 else 0
-        return recall
-
+        with torch.no_grad():
+            _, predictions = torch.max(y_pred, 1)
+            unique_classes = torch.unique(y_true)
+            recall_sum = 0
+            for cls in unique_classes:
+                true_positive = (predictions == cls)[y_true == cls].sum().item()
+                actual_positive = (y_true == cls).sum().item()
+                recall_sum += true_positive / actual_positive if actual_positive > 0 else 0
+            return recall_sum / len(unique_classes)
 
 class F1Score(Metric):
-    """
-    F1Score is a metric that calculates the F1 score, which is a measure of a model's accuracy.
-    It combines precision and recall to provide a single metric that balances both measures.
-
-    Args:
-        None
-
-    Returns:
-        float: The F1 score value.
-
-    Example:
-        f1_score = F1Score()
-        score = f1_score(y_true, y_pred)
-    """
-
     def __init__(self):
         super().__init__("f1_score")
 
@@ -159,5 +112,4 @@ class F1Score(Metric):
         recall_metric = Recall()
         precision = precision_metric(y_true, y_pred)
         recall = recall_metric(y_true, y_pred)
-        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
-        return f1_score
+        return 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0

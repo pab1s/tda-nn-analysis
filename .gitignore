@@ -170,5 +170,6 @@ data/
 outputs/checkpoints/*.pth
 outputs/figures/*.png
 logs/
+SLURM/
 
 /data

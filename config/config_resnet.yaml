@@ -2,7 +2,7 @@ trainer: "BasicTrainer"
 random_seed: 43
 
 model:
-  type: "efficientnet_b0"
+  type: "resnet18"
   parameters:
     num_classes: 34
     pretrained: true
@@ -10,8 +10,8 @@ model:
 training:
   batch_size: 32
   epochs:
-    initial: 100
-    fine_tuning: 10
+    initial: 200
+    fine_tuning: 200
   loss_function:
     type: "CrossEntropyLoss"
     parameters: {}
@@ -37,25 +37,25 @@ callbacks:
       csv_path: "dinamically/set/by/date.csv"
   Checkpoint:
     parameters:
-      save_freq: 1
+      save_freq: 5
   EarlyStopping:
     parameters:
       monitor: "val_loss"
-      patience: 10
-      delta: 0.01
+      patience: 5
+      delta: 0
       verbose: true
 
 data:
   name: "CarDataset"
   dataset_path: "./data/processed/DB_Marca"
-  test_size: 0.2
+  test_size: 0.1
   val_size: 0.1
   transforms:
     - type: "Resize"
       parameters:
-        size: [240, 240]
-    - type: "AutoAugment"
-      parameters: {}
+        size: [224, 224]
+    #- type: "TrivialAugmentWide"
+    #  parameters: {}
     - type: "ToTensor"
       parameters: {}
     - type: "Normalize"

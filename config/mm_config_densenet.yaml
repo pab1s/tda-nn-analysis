@@ -1,0 +1,80 @@
+trainer: "BasicTrainer"
+random_seed: 43
+
+model:
+  type: "densenet121"
+  parameters:
+    num_classes: 152
+    pretrained: true
+
+training:
+  batch_size: 32
+  epochs:
+    initial: 200
+    fine_tuning: 200
+  loss_function:
+    type: "CrossEntropyLoss"
+    parameters: {}
+  optimizer:
+    type: "Adam"
+    parameters:
+      learning_rate: 0.005
+  learning_rates:
+    initial: 0.01
+    fine_tuning: 0.001
+    final_fine_tuning: 0.0001
+  freeze_until_layer: "classifier.1.weight"
+
+metrics:
+  - type: "Accuracy"
+  - type: "Precision"
+  - type: "Recall"
+  - type: "F1Score"
+
+callbacks:
+  CSVLogging:
+    parameters:
+      csv_path: "dinamically/set/by/date.csv"
+  Checkpoint:
+    parameters:
+      save_freq: 5
+  EarlyStopping:
+    parameters:
+      monitor: "val_loss"
+      patience: 5
+      delta: 0
+      verbose: true
+
+data:
+  name: "CarDataset"
+  dataset_path: "./data/processed/DB_Marca_Modelo"
+  test_size: 0.1
+  val_size: 0.1
+  transforms:
+    - type: "Resize"
+      parameters:
+        size: [240, 240]
+    #- type: "TrivialAugmentWide"
+    #  parameters: {}
+    - type: "ToTensor"
+      parameters: {}
+    - type: "Normalize"
+      parameters:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+  eval_transforms:
+    - type: "Resize"
+      parameters:
+        size: [240, 240]
+    - type: "ToTensor"
+      parameters: {}
+    - type: "Normalize"
+      parameters:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+
+paths:
+  model_path: "./outputs/models/"
+  log_path: "./logs/"
+  plot_path: "./outputs/figures/"
+  checkpoint_path: "./outputs/checkpoints/"

@@ -1,8 +1,9 @@
 import torch
+from collections import defaultdict
 from abc import ABC, abstractmethod
 import time
 from typing import Tuple
-from callbacks.early_stopping import EarlyStopping
+
 
 class BaseTrainer(ABC):
     """
@@ -133,9 +134,6 @@ class BaseTrainer(ABC):
                 logs['val_metrics'] = {}
 
             for callback in callbacks:
-                if isinstance(callback, EarlyStopping):
-                    callback.set_model_and_optimizer(self.model, self.optimizer)
-
                 callback.on_epoch_end(epoch, logs=logs)
 
             epoch_time = time.time() - epoch_start_time
@@ -170,37 +168,38 @@ class BaseTrainer(ABC):
         return output
 
     def evaluate(self, data_loader, metrics=None, verbose=True) -> Tuple[float, dict]:
-        """
-        Evaluate the model on a given dataset.
-
-        Args:
-            data_loader: The data loader for the dataset.
-            metrics (list): List of metrics to evaluate (optional).
-            verbose (bool): Whether to print evaluation results (default: True).
-
-        Returns:
-            Tuple[float, dict]: The average loss and metric results.
-        """
         if metrics is None:
             metrics = self.metrics
 
         self.model.eval()
         total_loss = 0
-        metric_results = {metric.name: 0 for metric in metrics}
+        metric_aggregators = {metric.name: [] for metric in metrics}  # Store results for each batch to calculate more accurately later
+
         with torch.no_grad():
             for images, labels in data_loader:
                 images, labels = images.to(self.device), labels.to(self.device)
                 outputs = self.model(images)
                 loss = self.criterion(outputs, labels)
                 total_loss += loss.item()
+                batch_size = labels.size(0)
+
                 for metric in metrics:
                     metric_value = metric(labels, outputs)
-                    metric_results[metric.name] += metric_value
+                    # Store the metric value along with the batch size
+                    metric_aggregators[metric.name].append((metric_value, batch_size))
 
         num_batches = len(data_loader)
         avg_loss = total_loss / num_batches
-        for metric_name in metric_results.keys():
-            metric_results[metric_name] /= num_batches
+        metric_results = {}
+
+        # Calculate weighted average for metrics if needed
+        for metric_name, values in metric_aggregators.items():
+            if any(v[1] for v in values):  # Avoid division by zero
+                weighted_sum = sum(v[0] * v[1] for v in values)
+                total_weight = sum(v[1] for v in values)
+                metric_results[metric_name] = weighted_sum / total_weight
+            else:
+                metric_results[metric_name] = 0
 
         if verbose:
             print(f"Evaluation - Loss: {avg_loss:.4f}")

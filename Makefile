@@ -20,7 +20,7 @@ ifndef CONDA
 endif
 	@echo "Creating the Conda environment if it doesn't exist..."
 	@conda env list | grep -q '^$(ENV_NAME) ' || \
-	conda create --yes --prefix $(ENV_NAME) python=$(PYTHON_VERSION)
+	conda create --yes --name $(ENV_NAME) python=$(PYTHON_VERSION)
 
 # Install packages from an environment file or manually specified
 .PHONY: install
@@ -28,23 +28,23 @@ install: init
 	@echo "Installing necessary packages into the Conda environment..."
 	@if [ -f "$(ENV_FILE)" ]; then \
 		echo "Using $(ENV_FILE) to install packages..."; \
-		conda env update --prefix $(ENV_NAME) --file $(ENV_FILE) --prune; \
+		conda env update --name $(ENV_NAME) --file $(ENV_FILE) --prune; \
 	else \
 		echo "No $(ENV_FILE) found. Installing default packages..."; \
-		conda run --prefix $(ENV_NAME) conda install --yes numpy pandas scipy matplotlib; \
+		conda run --name $(ENV_NAME) conda install --yes numpy pandas scipy matplotlib; \
 	fi
 
 # Export the current environment to a YAML file, excluding build-specific fields
 .PHONY: export
 export:
 	@echo "Exporting the Conda environment to $(ENV_FILE)..."
-	@conda env export --name $(ENV_NAME) --no-builds | grep -v "^prefix: " > $(ENV_FILE)
+	@conda env export --name $(ENV_NAME) --no-builds | grep -v "^name: " > $(ENV_FILE)
 
 # Update all packages in the Conda environment
 .PHONY: update
 update: init
 	@echo "Updating all packages in the Conda environment..."
-	@conda run --prefix $(ENV_NAME) conda update --all --yes
+	@conda run --name $(ENV_NAME) conda update --all --yes
 
 # Run tests using pytest within the Conda environment
 .PHONY: test

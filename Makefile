@@ -28,10 +28,10 @@ install: init
 	@echo "Installing necessary packages into the Conda environment..."
 	@if [ -f "$(ENV_FILE)" ]; then \
 		echo "Using $(ENV_FILE) to install packages..."; \
-		conda env update --name $(ENV_NAME) --file $(ENV_FILE) --prune; \
+		conda env update --prefix $(ENV_NAME) --file $(ENV_FILE) --prune; \
 	else \
 		echo "No $(ENV_FILE) found. Installing default packages..."; \
-		conda run --name $(ENV_NAME) conda install --yes numpy pandas scipy matplotlib; \
+		conda run --prefix $(ENV_NAME) conda install --yes numpy pandas scipy matplotlib; \
 	fi
 
 # Export the current environment to a YAML file, excluding build-specific fields
@@ -44,7 +44,7 @@ export:
 .PHONY: update
 update: init
 	@echo "Updating all packages in the Conda environment..."
-	@conda run --name $(ENV_NAME) conda update --all --yes
+	@conda run --prefix $(ENV_NAME) conda update --all --yes
 
 # Run tests using pytest within the Conda environment
 .PHONY: test

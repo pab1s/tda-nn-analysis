@@ -4,5 +4,5 @@ from torch.nn import CrossEntropyLoss, MSELoss
 class LossFactory(Factory):
     def __init__(self):
         super().__init__()
-        self.register("CrossEntropyLoss", lambda: CrossEntropyLoss())
-        self.register("MSELoss", lambda: MSELoss())
+        self.register("CrossEntropyLoss", lambda **kwargs: CrossEntropyLoss(**kwargs))
+        self.register("MSELoss", lambda **kwargs: MSELoss(**kwargs))

@@ -1,7 +1,7 @@
 import math
 import torch
 
-def find_lr(model, train_loader, criterion, optimizer_class, optimizer_params, init_value=1e-8, final_value=10, beta=0.98, device=None):
+def find_lr(model, train_loader, criterion, optimizer_class, optimizer_params, init_value=1e-8, final_value=1e-1, beta=0.98, device=None):
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)

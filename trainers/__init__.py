@@ -1,5 +1,6 @@
 from trainers.basic_trainer import BasicTrainer
 from trainers.naive_trainer import NaiveTrainer
+from trainers.topological_trainer import TopologicalTrainer
 
 def get_trainer(trainer_name, **kwargs):
     """
@@ -19,5 +20,7 @@ def get_trainer(trainer_name, **kwargs):
         return BasicTrainer(**kwargs)
     if trainer_name == "NaiveTrainer":
         return NaiveTrainer(**kwargs)
+    if trainer_name == "TopologicalTrainer":
+        return TopologicalTrainer(**kwargs)
     else:
         raise ValueError(f"Trainer {trainer_name} not recognized.")

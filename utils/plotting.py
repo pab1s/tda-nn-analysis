@@ -1,54 +1,89 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import pandas as pd
 
-def plot_loss_statistics_with_seaborn(loss_lists):
+def plot_metrics(metrics_lists, val_metrics_lists=None, keywords=None) -> None:
     """
-    Plots the mean loss per epoch and the standard deviation as a shaded area for multiple experiments with variable epoch lengths using seaborn for improved aesthetics.
-    
+    Plots the metrics for training and validation data.
+
     Args:
-        loss_lists (list of list of lists): Each element is a list of lists where each sublist represents 
-                                            the loss per epoch for a single experiment, not necessarily all the same length.
+        metrics_lists (list): A list of lists containing the metrics values for each experiment.
+        val_metrics_lists (list, optional): A list of lists containing the validation metrics values for each experiment. Defaults to None.
+        keywords (list, optional): A list of keywords to label each experiment. Defaults to None.
+
+    Returns:
+        None
     """
-    # Setting up seaborn for better aesthetics
-    sns.set(style="whitegrid")
-    
-    # Determine the maximum number of epochs across all experiments
-    max_epochs = max(max(len(losses) for losses in experiment) for experiment in loss_lists)
+    sns.set_theme(style="whitegrid")
 
-    num_experiments = len(loss_lists)
-    mean_losses = []
-    std_losses = []
+    if not keywords:
+        keywords = [f"Experiment {i+1}" for i in range(len(metrics_lists))]
 
-    for experiment_losses in loss_lists:
-        # Create an array with shape (num_of_experiments, max_epochs), initialized with NaN
-        losses_array = np.full((len(experiment_losses), max_epochs), np.nan)
-        
-        # Fill the array with loss values
-        for i, losses in enumerate(experiment_losses):
-            losses_array[i, :len(losses)] = losses
-        
-        # Compute mean and std deviation along the experiment axis, ignoring NaNs
-        mean_losses.append(np.nanmean(losses_array, axis=0))
-        std_losses.append(np.nanstd(losses_array, axis=0))
+    if not any(metrics_lists) and (val_loss_lists is None or not any(val_loss_lists)):
+        print("No data available for plotting.")
+        return
+
+    # Calculate maximum epoch counts for training data
+    train_max_epochs = max((max((len(metrics) for metrics in experiment if metrics), default=0) for experiment in metrics_lists), default=0)
+
+    # If val_metrics_lists is provided and not empty, calculate its max epochs
+    if val_metrics_lists and any(val_metrics_lists):
+        val_max_epochs = max((max((len(metrics) for metrics in experiment if metrics), default=0) for experiment in val_metrics_lists), default=0)
+        max_epochs = max(train_max_epochs, val_max_epochs)
+    else:
+        max_epochs = train_max_epochs
     
-    # Plotting with seaborn
+    if max_epochs == 0:
+        print("No epochs data available for plotting.")
+        return
+
     plt.figure(figsize=(10, 6))
     epochs_x = np.arange(1, max_epochs + 1)
-    colors = sns.color_palette("hsv", num_experiments)  # Using seaborn color palette
-    
-    for i, (mean_loss, std_loss) in enumerate(zip(mean_losses, std_losses)):
-        plt.plot(epochs_x, mean_loss, label=f'Experiment Group {i+1}', color=colors[i])
-        plt.fill_between(epochs_x, mean_loss - std_loss, mean_loss + std_loss, color=colors[i], alpha=0.3)
-    
-    plt.title('Mean Loss Per Epoch With Standard Deviation')
+    colors = sns.color_palette("husl", n_colors=len(metrics_lists))
+
+    # Plotting training metrics
+    for idx, experiment_metrics in enumerate(metrics_lists):
+        if not experiment_metrics:
+            continue
+
+        # Handle training metrics
+        metrics_array = np.full((len(experiment_metrics), max_epochs), np.nan)
+
+        for i, metrics in enumerate(experiment_metrics):
+            metrics_array[i, :len(metrics)] = metrics
+
+        mean_loss = np.nanmean(metrics_array, axis=0)
+        std_loss = np.nanstd(metrics_array, axis=0)
+
+        if not np.isnan(mean_loss).all():
+            plt.plot(epochs_x, mean_loss, label=f"{keywords[idx]}", color=colors[idx])
+            plt.fill_between(epochs_x, mean_loss - std_loss, mean_loss + std_loss, color=colors[idx], alpha=0.3)
+
+        # Handle validation metrics if provided
+        if val_loss_lists and idx < len(val_loss_lists) and val_loss_lists[idx]:
+            val_experiment_metrics = val_loss_lists[idx]
+
+            if val_experiment_metrics and any(val_experiment_metrics):
+                val_metrics_array = np.full((len(val_experiment_metrics), max_epochs), np.nan)
+
+                for i, metrics in enumerate(val_experiment_metrics):
+                    val_metrics_array[i, :len(metrics)] = metrics
+
+                val_mean_loss = np.nanmean(val_metrics_array, axis=0)
+                val_std_loss = np.nanstd(val_metrics_array, axis=0)
+
+                if not np.isnan(val_mean_loss).all():
+                    plt.plot(epochs_x, val_mean_loss, label=f"Val: {keywords[idx]}", color=colors[idx], linestyle='--')
+                    plt.fill_between(epochs_x, val_mean_loss - val_std_loss, val_mean_loss + val_std_loss, color=colors[idx], alpha=0.1)
+
     plt.xlabel('Epoch')
-    plt.ylabel('Mean Loss')
-    plt.xticks(epochs_x)  # Set x-ticks to show integer values for epochs
+    plt.ylabel('Metric')
+    plt.xticks(epochs_x)
     plt.legend()
     plt.show()
 
-def plot_loss(training_epoch_losses, validation_epoch_losses, plot_path):
+def plot_loss(training_epoch_losses, validation_epoch_losses, plot_path) -> None:
     """
     Plots the training and validation losses over epochs.
 
@@ -60,6 +95,7 @@ def plot_loss(training_epoch_losses, validation_epoch_losses, plot_path):
     Returns:
         None
     """
+
     plt.figure(figsize=(10, 5))
     
     epochs = np.arange(1, len(training_epoch_losses) + 1)
@@ -78,7 +114,7 @@ def plot_loss(training_epoch_losses, validation_epoch_losses, plot_path):
     plt.savefig(plot_path)
     plt.close()
 
-def plot_lr_vs_loss(log_lrs, losses, plot_path):
+def plot_lr_vs_loss(log_lrs, losses, plot_path) -> None:
     """
     Plots the learning rate vs loss.
 
@@ -92,7 +128,7 @@ def plot_lr_vs_loss(log_lrs, losses, plot_path):
     """
     plt.figure(figsize=(10, 5))
     
-    plt.plot(log_lrs, losses, label="Learning Rate vs Loss")
+    plt.plot(log_lrs, losses, label="Learning Rate vs Loss", marker='o')
     
     plt.title("Learning Rate vs Loss")
     plt.xlabel("Log Learning Rate")
@@ -102,10 +138,46 @@ def plot_lr_vs_loss(log_lrs, losses, plot_path):
     plt.savefig(plot_path)
     plt.close()
 
-    # Deriving CSV path from the plot path
-    csv_path = plot_path.replace(".png", ".csv")
+import os
+
+def find_csv_by_keywords(directory, keywords) -> list:
+    """
+    Finds CSV files in the specified directory that contain the specified keywords in their filenames.
+
+    Args:
+        directory (str): The directory path where the CSV files are located.
+        keywords (list): A list of keywords to search for in the filenames.
+
+    Returns:
+        list: A list of lists containing the DataFrames of the CSV files found for each keyword.
+    """
+
+    keyword_files = {keyword: [] for keyword in keywords}
     
-    # Saving data to a CSV file
-    data = {'Log Learning Rate': log_lrs, 'Loss': losses}
-    df = pd.DataFrame(data)
-    df.to_csv(csv_path, index=False)
+    for file in os.listdir(directory):
+        if file.endswith('.csv'):
+            for keyword in keywords:
+                if keyword in file:
+                    df = pd.read_csv(os.path.join(directory, file))
+                    keyword_files[keyword].append(df)
+    
+    result = [keyword_files[keyword] for keyword in keywords]
+    return result
+
+
+if __name__ == "__main__":
+    directory = 'logs/MM'
+    keywords = ['8', '16', '32', '64']
+    plot_titles = ['Tamaño de lote 8', 'Tamaño de lote 16', 'Tamaño de lote 32', 'Tamaño de lote 64']
+    dataframes_list = find_csv_by_keywords(directory, keywords)
+
+    train_loss_lists = [[df['train_loss'].tolist() for df in dataframes] for dataframes in dataframes_list]
+    val_loss_lists = [[df['val_loss'].tolist() for df in dataframes] for dataframes in dataframes_list]
+    train_precision_lists = [[df['train_precision'].tolist() for df in dataframes] for dataframes in dataframes_list]
+    val_precision_lists = [[df['val_precision'].tolist() for df in dataframes] for dataframes in dataframes_list]
+    val_accuracy_lists = [[df['val_accuracy'].tolist() for df in dataframes] for dataframes in dataframes_list]
+    val_f1_score_lists = [[df['val_f1_score'].tolist() for df in dataframes] for dataframes in dataframes_list]
+
+    plot_metrics(train_loss_lists, val_loss_lists, plot_titles)
+    plot_metrics(train_precision_lists, val_precision_lists, plot_titles)
+    plot_metrics(val_accuracy_lists, val_f1_score_lists, plot_titles)

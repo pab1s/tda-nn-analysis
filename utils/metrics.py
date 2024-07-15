@@ -14,6 +14,12 @@ class Metric(ABC):
     """
 
     def __init__(self, name):
+        """
+        Initializes a Metric object.
+
+        Args:
+            name (str): The name of the metric.
+        """
         self.name = name
 
     @abstractmethod
@@ -51,14 +57,6 @@ class Accuracy(Metric):
 
     Returns:
         float: The accuracy value.
-
-    Example:
-        >>> accuracy = Accuracy()
-        >>> y_true = torch.tensor([0, 1, 1, 0])
-        >>> y_pred = torch.tensor([[0.9, 0.1], [0.2, 0.8], [0.3, 0.7], [0.6, 0.4]])
-        >>> acc = accuracy(y_true, y_pred)
-        >>> print(acc)
-        0.75
     """
 
     def __init__(self):
@@ -74,6 +72,18 @@ class Accuracy(Metric):
         return correct / total
 
 class Precision(Metric):
+    """
+    Calculates the precision metric for a multi-class classification problem.
+
+    Precision is defined as the ratio of true positive predictions to the total number of positive predictions made by the model.
+
+    Args:
+        None
+
+    Returns:
+        float: The precision score.
+    """
+
     def __init__(self):
         super().__init__("precision")
 
@@ -89,6 +99,18 @@ class Precision(Metric):
             return precision_sum / len(unique_classes)
 
 class Recall(Metric):
+    """
+    Calculates the recall metric for a multi-class classification problem.
+
+    Recall is defined as the ratio of true positive predictions to the total number of actual positive samples.
+
+    Args:
+        None
+
+    Returns:
+        float: The recall score.
+    """
+
     def __init__(self):
         super().__init__("recall")
 
@@ -104,6 +126,18 @@ class Recall(Metric):
             return recall_sum / len(unique_classes)
 
 class F1Score(Metric):
+    """
+    Calculates the F1 score metric for a multi-class classification problem.
+
+    F1 score is defined as the harmonic mean of precision and recall.
+
+    Args:
+        None
+    
+    Returns:
+        float: The F1 score.
+    """
+    
     def __init__(self):
         super().__init__("f1_score")
 

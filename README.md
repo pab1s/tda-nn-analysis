@@ -50,7 +50,7 @@ To get started with the project, follow these steps:
 1. Clone the repository: `git clone https://github.com/pab1s/tda-nn-separability.git`
 2. Install the required dependencies: `make init`. To activate the virtual environment, run `conda activate tda-nn-analysis`.
 3. Explore the datasets in the `data/` directory.
-4. To run the project main file, just use `python -m main`.
+4. To run the project any of the scripts of the experiments, just from the root directory `./scripts/script_to_run.sh <args>`.
 5. Run the Jupyter notebooks in the `notebooks/` directory to see examples of EDA, TDA and NN applied to the datasets.
 6. Run the unit tests in the `tests/` directory to ensure everything is working correctly. You can use `make test` to run the tests.
 7. After modifying the code, run `make export` to update the environment file.

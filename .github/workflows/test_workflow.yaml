@@ -19,7 +19,7 @@ jobs:
       with:
         auto-update-conda: true
         environment-file: environment.yaml
-        activate-environment: tda-nn-separability
+        activate-environment: tda-nn-analysis
         python-version: 3.10.14
         channels: conda-forge
 

@@ -167,6 +167,7 @@ data/
 *.xlsx
 
 # Outputs
+outputs/*
 outputs/checkpoints/*.pth
 outputs/figures/*.png
 logs/

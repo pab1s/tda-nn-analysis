@@ -1,3 +1,5 @@
+from typing import Any
+
 class Factory:
     """
     A class that represents a factory for creating objects based on a given key.
@@ -14,7 +16,7 @@ class Factory:
     def __init__(self):
         self._creators = {}
 
-    def register(self, key, creator):
+    def register(self, key, creator) -> None:
         """
         Registers a creator function for a given key.
 
@@ -25,7 +27,7 @@ class Factory:
         """
         self._creators[key] = creator
 
-    def create(self, key, **kwargs):
+    def create(self, key, **kwargs) -> Any:
         """
         Creates an object using the registered creator function for the given key.
 

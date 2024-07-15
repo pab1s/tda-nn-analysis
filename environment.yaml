@@ -328,4 +328,4 @@ dependencies:
       - torch-topological==0.1.7
       - wheel==0.43.0
       - widgetsnbextension==4.0.11
-prefix: /home/pab1s/.conda/envs/tda-nn-separability
+prefix: /home/pab1s/.conda/envs/tda-nn-analysis

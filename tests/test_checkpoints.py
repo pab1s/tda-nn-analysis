@@ -6,7 +6,7 @@ from trainers import get_trainer
 from utils.metrics import Accuracy, Precision, Recall, F1Score
 from datasets.transformations import get_transforms
 from datasets.dataset import get_dataset
-from models import get_model
+from factories.model_factory import ModelFactory
 from callbacks import Checkpoint
 
 CONFIG_TEST = {}
@@ -15,6 +15,26 @@ with open("./config/config_test.yaml", 'r') as file:
     CONFIG_TEST = yaml.safe_load(file)
 
 def test_checkpoint():
+    """
+    Test the functionality of checkpoint saving and loading.
+
+    This function performs the following steps:
+    1. Sets the device to CUDA if available, otherwise CPU.
+    2. Retrieves the data transforms and dataset.
+    3. Splits the dataset into training and testing sets.
+    4. Creates data loaders for the training and testing sets.
+    5. Creates the model, criterion, optimizer, and metrics.
+    6. Sets up the trainer and checkpoint callback.
+    7. Trains the model and saves checkpoints at specified intervals.
+    8. Verifies that the checkpoint file was created.
+    9. Resets the model parameters to simulate a restart.
+    10. Loads the checkpoint.
+    11. Evaluates the model on the test set.
+    12. Verifies that the metrics after resuming are valid.
+
+    Raises:
+        AssertionError: If the checkpoint file was not created or if the metrics after resuming are not valid.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     transforms = get_transforms(CONFIG_TEST['data']['transforms'])
@@ -32,7 +52,8 @@ def test_checkpoint():
     train_loader = torch.utils.data.DataLoader(data_train, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=True)
     test_loader = torch.utils.data.DataLoader(data_test, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=False)
 
-    model = get_model(CONFIG_TEST['model']['name'], CONFIG_TEST['model']['num_classes'], CONFIG_TEST['model']['pretrained']).to(device)
+    model_factory = ModelFactory()
+    model = model_factory.create(CONFIG_TEST['model']['name'], num_classes=CONFIG_TEST['model']['num_classes'], pretrained=CONFIG_TEST['model']['pretrained'])
     
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=CONFIG_TEST['training']['learning_rate'])

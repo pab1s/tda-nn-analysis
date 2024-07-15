@@ -3,6 +3,10 @@ from torchvision.models import efficientnet_b0, resnet18
 from factories.model_factory import ModelFactory
 
 def test_model_factory_creation():
+    """
+    Test the creation of models using the ModelFactory class.
+    """
+    
     factory = ModelFactory()
     
     # Test EfficientNet B0 creation

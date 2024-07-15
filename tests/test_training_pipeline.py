@@ -3,7 +3,7 @@ from trainers import get_trainer
 from utils.metrics import Accuracy, Precision, Recall, F1Score
 from datasets.transformations import get_transforms
 from datasets.dataset import get_dataset
-from models import get_model
+from factories.model_factory import ModelFactory
 import torch
 import yaml
 
@@ -57,11 +57,8 @@ def test_training_loop():
     valid_loader = torch.utils.data.DataLoader(data_val, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=False)
     test_loader = torch.utils.data.DataLoader(data_test, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=False)
 
-    model = get_model(
-        CONFIG_TEST['model']['name'],
-        CONFIG_TEST['model']['num_classes'],
-        CONFIG_TEST['model']['pretrained']
-    ).to(device)
+    model_factory = ModelFactory()
+    model = model_factory.create(CONFIG_TEST['model']['name'], num_classes=CONFIG_TEST['model']['num_classes'], pretrained=CONFIG_TEST['model']['pretrained'])
     
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam

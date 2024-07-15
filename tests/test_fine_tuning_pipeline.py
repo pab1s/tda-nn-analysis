@@ -3,7 +3,7 @@ from trainers import get_trainer
 from utils.metrics import Accuracy, Precision, Recall, F1Score
 from datasets.transformations import get_transforms
 from datasets.dataset import get_dataset
-from models import get_model
+from factories.model_factory import ModelFactory
 import torch
 import yaml
 
@@ -58,11 +58,8 @@ def test_fine_tuning_loop():
     valid_loader = torch.utils.data.DataLoader(data_val, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=False)
     test_loader = torch.utils.data.DataLoader(data_test, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=False)
 
-    model = get_model(
-        CONFIG_TEST['model']['name'],
-        CONFIG_TEST['model']['num_classes'],
-        CONFIG_TEST['model']['pretrained']
-    ).to(device)
+    model_factory = ModelFactory()
+    model = model_factory.create(CONFIG_TEST['model']['name'], num_classes=CONFIG_TEST['model']['num_classes'], pretrained=CONFIG_TEST['model']['pretrained'])
     
     criterion = torch.nn.CrossEntropyLoss()
     optimizer_class = torch.optim.Adam
@@ -70,13 +67,13 @@ def test_fine_tuning_loop():
     metrics = [Accuracy(), Precision(), Recall(), F1Score()]
     
     trainer = get_trainer(CONFIG_TEST['trainer'], model=model, device=device)
-    
+
     # Simulate fine-tuning process
     trainer.build(
         criterion=criterion,
         optimizer_class=optimizer_class,
         optimizer_params=optimizer_params,
-        freeze_until_layer=CONFIG_TEST['training'].get('freeze_until_layer'),
+        freeze_until_layer=CONFIG_TEST['training']['freeze_until_layer'],
         metrics=metrics
     )
 

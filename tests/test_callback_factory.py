@@ -3,6 +3,10 @@ from callbacks import CSVLogging, EarlyStopping
 from factories.callback_factory import CallbackFactory
 
 def test_callback_factory_creation():
+    """
+    Test the creation of callback objects using the CallbackFactory class.
+    """
+
     factory = CallbackFactory()
     
     # Test CSVLogging creation
@@ -16,6 +20,10 @@ def test_callback_factory_creation():
     assert isinstance(early_stopper, EarlyStopping), "Failed to create EarlyStopping"
 
 def test_callback_factory_unknown():
+    """
+    Test the creation of unknown callback objects using the CallbackFactory class.
+    """
+    
     factory = CallbackFactory()
     with pytest.raises(ValueError) as e:
         factory.create("UnknownCallback")

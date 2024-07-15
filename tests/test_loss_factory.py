@@ -3,6 +3,10 @@ from torch.nn import CrossEntropyLoss, MSELoss
 from factories.loss_factory import LossFactory
 
 def test_loss_factory_creation():
+    """
+    Test the creation of different loss functions using the LossFactory class.
+    """
+    
     factory = LossFactory()
     
     # Test CrossEntropyLoss creation

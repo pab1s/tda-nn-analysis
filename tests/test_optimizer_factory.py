@@ -4,6 +4,10 @@ from torch.optim import Adam, SGD
 from factories.optimizer_factory import OptimizerFactory
 
 def test_optimizer_factory_creation():
+    """
+    Test the creation of optimizers using the OptimizerFactory class.
+    """
+    
     factory = OptimizerFactory()
 
     # Simulate model parameters
@@ -20,6 +24,5 @@ def test_optimizer_factory_creation():
 def test_optimizer_factory_unknown():
     factory = OptimizerFactory()
     with pytest.raises(ValueError) as excinfo:
-        # Even though this will fail, you should still simulate correct usage
         factory.create("UnknownOptimizer")
     assert "Unknown configuration" in str(excinfo.value)

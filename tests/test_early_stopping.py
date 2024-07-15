@@ -1,10 +1,11 @@
 import pytest
 from trainers import get_trainer
 from callbacks import EarlyStopping
+from factories.callback_factory import CallbackFactory
 from utils.metrics import Accuracy
 from datasets.transformations import get_transforms
 from datasets.dataset import get_dataset
-from models import get_model
+from factories.model_factory import ModelFactory
 import torch
 import yaml
 
@@ -13,7 +14,7 @@ with open("./config/config_test.yaml", 'r') as file:
     CONFIG_TEST = yaml.safe_load(file)
 
 @pytest.mark.parametrize("patience,delta,num_epochs", [
-    (2, 0.1, 5),  # Patience of 2, delta of 0.1, and training for 5 epochs
+    (1, 0.0, 10), # Early stopping should trigger after 2 epochs
 ])
 def test_early_stopping(patience, delta, num_epochs):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,8 +37,9 @@ def test_early_stopping(patience, delta, num_epochs):
     test_loader = torch.utils.data.DataLoader(data_test, batch_size=CONFIG_TEST['training']['batch_size'], shuffle=False)
 
     # Initialize model
-    model = get_model(CONFIG_TEST['model']['name'], CONFIG_TEST['model']['num_classes'], CONFIG_TEST['model']['pretrained']).to(device)
-    
+    model_factory = ModelFactory()
+    model = model_factory.create(CONFIG_TEST['model']['name'], num_classes=CONFIG_TEST['model']['num_classes'], pretrained=CONFIG_TEST['model']['pretrained'])
+
     # Initialize criterion and optimizer
     criterion = torch.nn.CrossEntropyLoss()
     optimizer_class = torch.optim.Adam
@@ -56,7 +58,8 @@ def test_early_stopping(patience, delta, num_epochs):
 
     # Initialize EarlyStopping callback
     early_stopping_callback = EarlyStopping(patience=patience, verbose=True, monitor='val_loss', delta=delta)
-    
+    early_stopping_callback.set_model_and_optimizer(model, trainer.optimizer)
+
     # Train the model
     trainer.train(
         train_loader=train_loader,

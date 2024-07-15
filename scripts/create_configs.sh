@@ -2,10 +2,10 @@
 
 # Define the ranges for each parameter
 learning_rates=(0.0001 0.001 0.01)
-batch_sizes=(16 32 64)
+batch_sizes=(8 16 32 64)
 num_epochs=(2 5 10)
-optimizers=(Adam RMSProp SGD)
-loss_functions=(CrossEntropyLoss MeanSquaredError)
+optimizers=(Adam SGD)
+loss_functions=(CrossEntropyLoss)
 
 # Define the config file and output directory
 config_file="config.yaml"
@@ -20,6 +20,7 @@ for lr in "${learning_rates[@]}"; do
     for ne in "${num_epochs[@]}"; do
       for opt in "${optimizers[@]}"; do
         for lf in "${loss_functions[@]}"; do
+        
           # Create a new config file with the modified parameters
           new_config_file="$output_dir/config_lr_${lr}_bs_${bs}_ne_${ne}_opt_${opt}_lf_${lf}.yaml"
           cp "$config_file" "$new_config_file"

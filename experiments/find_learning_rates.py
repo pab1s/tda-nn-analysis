@@ -13,6 +13,18 @@ from factories.optimizer_factory import OptimizerFactory
 from os import path
 
 def main(config_path, optimizer_type, optimizer_params, batch_size):
+    """
+    Main function for finding learning rates.
+
+    Args:
+        config_path (str): The path to the configuration file.
+        optimizer_type (str): The type of optimizer to use.
+        optimizer_params (dict): The parameters for the optimizer.
+        batch_size (int): The batch size for the data loader.
+
+    Returns:
+        None
+    """
     with open(config_path, 'r') as file:
         config = yaml.safe_load(file)
 
@@ -60,8 +72,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    batch_sizes = [8, 16, 32, 64]
-    optimizer_types = ["SGD", "Adam"]
+    batch_sizes = [64]
+    optimizer_types = ["SGD"]
     adam_params = {
         "lr": 0.01,
         "betas": (0.9, 0.999),
@@ -76,7 +88,6 @@ if __name__ == "__main__":
         "nesterov": False
     }
 
-    # Build the path to the configuration file within the 'config' directory
     config_path = f"config/{args.config_filename}"
 
     for optimizer_type in optimizer_types:

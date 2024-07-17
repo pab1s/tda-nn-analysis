@@ -47,7 +47,7 @@ The project is organized as follows:
 
 To get started with the project, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/pab1s/tda-nn-separability.git`
+1. Clone the repository: `git clone https://github.com/pab1s/tda-nn-analysis.git`
 2. Install the required dependencies: `make init`. To activate the virtual environment, run `conda activate tda-nn-analysis`.
 3. Explore the datasets in the `data/` directory.
 4. To run the project any of the scripts of the experiments, just from the root directory `./scripts/script_to_run.sh <args>`.
